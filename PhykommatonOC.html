@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<!--
+Copyright 2025 Kronosta
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the “Software”), to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+IN THE SOFTWARE.
+-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {
+                background-color:#c26b6b;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            div {
+                border-width: 5pt;
+                border-color: black;
+                border-style: double;
+                padding: 4pt;
+            }
+
+            .mono {
+                font-family: 'Courier New', Courier, monospace;
+            }
+        </style>
+        <script>
+            // Globals for storing the personality as it changes over time
+            var compoundedPersonalityScores = null;
+            var compoundedClothingPrefs = null;
+
+            const musicInstruments = [
+                '1 Acoustic Grand Piano or Piano 1',
+                '2 Bright Acoustic Piano or Piano 2',
+                '3 Electric Grand Piano or Piano 3 ',
+                '4 Honky-tonk Piano',
+                '5 Electric Piano 1 ',
+                '6 Electric Piano 2 ',
+                '7 Harpsichord ',
+                '8 Clavinet',
+                '9 Celesta',
+                '10 Glockenspiel',
+                '11 Music Box',
+                '12 Vibraphone',
+                '13 Marimba',
+                '14 Xylophone',
+                '15 Tubular Bells',
+                '16 Dulcimer or Santoor',
+                '17 Drawbar Organ or Organ 1',
+                '18 Percussive Organ or Organ 2',
+                '19 Rock Organ or Organ 3',
+                '20 Church Organ',
+                '21 Reed Organ',
+                '22 Accordion',
+                '23 Harmonica',
+                '24 Bandoneon or Tango Accordion',
+                '25 Acoustic Guitar ',
+                '26 Acoustic Guitar ',
+                '27 Electric Guitar ',
+                '28 Electric Guitar ',
+                '29 Electric Guitar ',
+                '30 Overdriven Guitar',
+                '31 Distortion Guitar',
+                '32 Guitar Harmonics',
+                '33 Acoustic Bass',
+                '34 Electric Bass ',
+                '35 Electric Bass ',
+                '36 Fretless Bass',
+                '37 Slap Bass 1',
+                '38 Slap Bass 2',
+                '39 Synth Bass 1',
+                '40 Synth Bass 2',
+                '41 Violin',
+                '42 Viola',
+                '43 Cello',
+                '44 Contrabass',
+                '45 Tremolo Strings',
+                '46 Pizzicato Strings',
+                '47 Orchestral Harp',
+                '48 Timpani',
+                '49 String Ensemble 1 ',
+                '50 String Ensemble 2 ',
+                '51 Synth Strings 1',
+                '52 Synth Strings 2',
+                '53 Choir Aahs',
+                '54 Voice Oohs ',
+                '55 Synth Voice or Synth Choir',
+                '56 Orchestra Hit',
+                '57 Trumpet',
+                '58 Trombone',
+                '59 Tuba',
+                '60 Muted Trumpet',
+                '61 French Horn',
+                '62 Brass Section',
+                '63 Synth Brass 1',
+                '64 Synth Brass 2',
+                '65 Soprano Sax',
+                '66 Alto Sax',
+                '67 Tenor Sax',
+                '68 Baritone Sax',
+                '69 Oboe',
+                '70 English Horn',
+                '71 Bassoon',
+                '72 Clarinet',
+                '73 Piccolo',
+                '74 Flute',
+                '75 Recorder',
+                '76 Pan Flute',
+                '77 Blown bottle',
+                '78 Shakuhachi',
+                '79 Whistle',
+                '80 Ocarina',
+                '81 Lead 1 ',
+                '82 Lead 2 ',
+                '83 Lead 3 ',
+                '84 Lead 4 ',
+                '85 Lead 5 ',
+                '86 Lead 6 ',
+                '87 Lead 7 ',
+                '88 Lead 8 ',
+                '89 Pad 1 ',
+                '90 Pad 2 ',
+                '91 Pad 3 ',
+                '92 Pad 4 ',
+                '93 Pad 5 ',
+                '94 Pad 6 ',
+                '95 Pad 7 ',
+                '96 Pad 8 ',
+                '97 FX 1 ',
+                '98 FX 2 ',
+                '99 FX 3 ',
+                '100 FX 4 ',
+                '101 FX 5 ',
+                '102 FX 6 ',
+                '103 FX 7 ',
+                '104 FX 8 ',
+                '105 Sitar',
+                '106 Banjo',
+                '107 Shamisen',
+                '108 Koto',
+                '109 Kalimba',
+                '110 Bag pipe',
+                '111 Fiddle',
+                '112 Shanai',
+                '113 Tinkle Bell',
+                '114 Agogô or cowbell',
+                '115 Steel Drums',
+                '116 Woodblock',
+                '117 Taiko Drum or Surdo',
+                '118 Melodic Tom',
+                '119 Synth Drum ',
+                '120 Reverse Cymbal',
+                '121 Guitar Fret Noise',
+                '122 Breath Noise',
+                '123 Seashore',
+                '124 Bird Tweet',
+                '125 Telephone Ring',
+                '126 Helicopter',
+                '127 Applause',
+                '128 Gunshot'
+            ];
+            const musicInstrumentsChord = [
+                '1 Acoustic Grand Piano or Piano 1',
+                '2 Bright Acoustic Piano or Piano 2',
+                '3 Electric Grand Piano or Piano 3 ',
+                '4 Honky-tonk Piano',
+                '5 Electric Piano 1 ',
+                '6 Electric Piano 2 ',
+                '7 Harpsichord ',
+                '8 Clavinet',
+                '9 Celesta',
+                '10 Glockenspiel',
+                '11 Music Box',
+                '12 Vibraphone',
+                '13 Marimba',
+                '14 Xylophone',
+                '15 Tubular Bells',
+                '16 Dulcimer or Santoor',
+                '17 Drawbar Organ or Organ 1',
+                '18 Percussive Organ or Organ 2',
+                '19 Rock Organ or Organ 3',
+                '20 Church Organ',
+                '21 Reed Organ',
+                '22 Accordion',
+                '24 Bandoneon or Tango Accordion',
+                '25 Acoustic Guitar ',
+                '26 Acoustic Guitar ',
+                '27 Electric Guitar ',
+                '28 Electric Guitar ',
+                '29 Electric Guitar ',
+                '30 Overdriven Guitar',
+                '31 Distortion Guitar',
+                '32 Guitar Harmonics',
+                '41 Violin',
+                '42 Viola',
+                '43 Cello',
+                '44 Contrabass',
+                '45 Tremolo Strings',
+                '46 Pizzicato Strings',
+                '47 Orchestral Harp',
+                '48 Timpani',
+                '49 String Ensemble 1 ',
+                '50 String Ensemble 2 ',
+                '51 Synth Strings 1',
+                '52 Synth Strings 2',
+                '53 Choir Aahs',
+                '54 Voice Oohs ',
+                '55 Synth Voice or Synth Choir',
+                '89 Pad 1 ',
+                '90 Pad 2 ',
+                '91 Pad 3 ',
+                '92 Pad 4 ',
+                '93 Pad 5 ',
+                '94 Pad 6 ',
+                '95 Pad 7 ',
+                '96 Pad 8 ',
+            ];
+            const musicNotes = ["A_", "A#", "B_", "C_", "C#", "D_", "D#", "E_", "F_", "F#", "G_", "G#"];
+            const musicScales = [
+                ["Ionian/Major", [2, 2, 1, 2, 2, 2, 1]],
+                ["Dorian", [2, 1, 2, 2, 2, 1, 2]],
+                ["Phrygian", [1, 2, 2, 2, 1, 2, 2]],
+                ["Lydian", [2, 2, 2, 1, 2, 2, 1]],
+                ["Mixolydian", [2, 2, 1, 2, 2, 1, 2]],
+                ["Aeolian/Minor", [2, 1, 2, 2, 1, 2, 2]],
+                ["Locrian", [1, 2, 2, 1, 2, 2, 2]]
+            ]
+
+            // Hash function for randomization based on name string
+            /*
+                cyrb53 (c) 2018 bryc (github.com/bryc)
+                License: Public domain (or MIT if needed). Attribution appreciated.
+                A fast and simple 53-bit string hash function with decent collision resistance.
+                Largely inspired by MurmurHash2/3, but with a focus on speed/simplicity.
+            */
+            const cyrb53 = function(str, seed = 0) {
+                let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+                for(let i = 0, ch; i < str.length; i++) {
+                    ch = str.charCodeAt(i);
+                    h1 = Math.imul(h1 ^ ch, 2654435761);
+                    h2 = Math.imul(h2 ^ ch, 1597334677);
+                }
+                h1  = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+                h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+                h2  = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+                h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+                return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+            };
+
+            function StringRandom(str) {
+                this.incrementer = 0;
+                this.str = str;
+                this.integer = (min, max) => {
+                    const numOptions = max - min + 1;
+                    const randomMod = cyrb53(this.str, this.incrementer++) % numOptions;
+                    return randomMod + min;
+                };
+                // If numPicks == arrayOfOptions.length && !repeatsAllowed, this is effectively a list shuffler
+                this.choices = (arrayOfOptions, numPicks, repeatsAllowed, copyArray) => {
+                    const clonedArray = copyArray ? [...arrayOfOptions] : arrayOfOptions;
+                    const totalChoices = [];
+                    for (let i = 0; i < numPicks; i++) {
+                        const index = this.integer(0, clonedArray.length - 1);
+                        totalChoices.push(clonedArray[index]);
+                        if (!repeatsAllowed)
+                            clonedArray.splice(index, 1);
+                    }
+                    return totalChoices;
+                };
+                this.choice = (arrayOfOptions) => {
+                    return this.choices(arrayOfOptions, 1, true, false)[0];
+                };
+                this.nonRepeatingIntegers = (min, max, count) => {
+                    const totalArray = [];
+                    for (let i = min; i <= max; i++)
+                        totalArray.push(i)
+                    return this.choices(totalArray, count, false);
+                }
+            }
+
+            function generateMusicTheme(dimension, randomizer) {
+                let totalHtml = '';
+
+                const key = randomizer.integer(0, musicNotes.length - 1);
+                const scale = randomizer.integer(0, musicScales.length - 1);
+
+                let allowedNotes = [musicNotes[key]];
+                let scalePointer = 0;
+                for (let i = 0; i < musicScales[scale][1].length; i++) {
+                    scalePointer = (scalePointer + musicScales[scale][1][i]) % musicNotes.length;
+                    allowedNotes.push(musicNotes[scalePointer]);
+                }
+
+                totalHtml += "Time Signature: " + dimension + "/4\n";
+                totalHtml += "Key/Scale: " + musicNotes[key] + " " + musicScales[scale][0] + "\n";
+                totalHtml += "BPM: " + randomizer.integer(80, 140) + "\n";
+
+                totalHtml += "\nDrum Loop (16th notes):";
+
+                const kickStyle = randomizer.integer(0, 1); //Kick style 1 is four-on-the-floor, style 0 is alternating
+                totalHtml += "\n  Kick----:"
+                for (let i = 0; i < dimension; i++)
+                    totalHtml += (kickStyle == 1 || i % 2 == 0 ? "*" : " ") + randomizer.choice(["   ", "  *"]);
+
+                totalHtml += ":\n  Snare---:";
+                const snareStyle = randomizer.integer(0, 1); // Snare style 1 is no snares, style 0 is alternating
+                for (let i = 0; i < dimension; i++)
+                    totalHtml += (i % 2 == 1 && snareStyle == 0 ? "*" : " ") + randomizer.choice(["   ","  *"]);
+
+                totalHtml += ":\n  HiHatO--:";
+                for (let i = 0; i < dimension * 4; i++)
+                    totalHtml += randomizer.integer(0, randomizer.integer(1, 5)) == 0 ? "*" : " ";
+
+                totalHtml += ":\n  HiHatC--:";
+                for (let i = 0; i < dimension * 4; i++)
+                    totalHtml += randomizer.integer(0, randomizer.integer(1, 5)) == 0 ? "*" : " ";
+
+                totalHtml += ":\n  " + randomizer.choice(["Clap----", "LowTom--", "MidTom--", "HighTom-", "Cymbal--", "RimShot-", "Tambourn", "Cowbell-"]) + ":";
+                for (let i = 0; i < dimension * 4; i++)
+                    totalHtml += randomizer.integer(0,11) == 0 ? "*" : " ";
+
+
+                
+                totalHtml += ":\n\nChords (measures): " + randomizer.choice(musicInstrumentsChord) + "\n";
+                for (let i = 0; i < 4; i++)
+                    totalHtml += "  * " + randomizer.choices(allowedNotes, randomizer.integer(3,5), false, true) + "\n";
+
+                totalHtml += "\nMelody 1 (16th-notes): " + randomizer.choice(musicInstruments) + "\n  ";
+                for (let i = 0; i < dimension * 4; i++)
+                    totalHtml += randomizer.integer(0,13) == 0 ? randomizer.choice(musicNotes) : randomizer.choice(allowedNotes);
+
+                totalHtml += "\n\nMelody 2 (16th-notes): " + randomizer.choice(musicInstruments) + "\n  ";
+                for (let i = 0; i < dimension * 4; i++)
+                    totalHtml += randomizer.integer(0,13) == 0 ? randomizer.choice(musicNotes) : randomizer.choice(allowedNotes);
+
+
+
+
+                totalHtml += "\n\nSong Structure: " + randomizer.choice([
+                    ((randomizer) => {
+                        const layers = ["Drums", "Chords", "Melody 1", "Melody 2"];
+                        const shuffled = randomizer.choices(layers, 4, false, false);
+                        return "Gradual build-up from one instrument, in order " + shuffled[0] + ", " + shuffled[1] + ", " + shuffled[2] + ", " + shuffled[3] + "."
+                    }),
+                    ((randomizer) => {
+                        const layers = ["Drums", "Chords", "Melody 1", "Melody 2"];
+                        const shuffled = randomizer.choices(layers, 4, false, false);
+                        return "Gradual breakdown from full, in order " + shuffled[0] + ", " + shuffled[1] + ", " + shuffled[2] + ", " + shuffled[3] + "."
+                    })
+                ])(randomizer);
+
+                return totalHtml;
+                
+            }
+
+            function insertMusicTheme(htmlElement, dimension, seedString) {
+                const newElement = document.createElement("pre");
+                newElement.innerHTML = generateMusicTheme(dimension, new StringRandom(seedString));
+                htmlElement.replaceWith(newElement);
+            }
+
+            function randomColor(randomizer) {
+                const r = randomizer.integer(0, 255);
+                const g = randomizer.integer(0, 255);
+                const b = randomizer.integer(0, 255);
+
+                return "rgb(" + r + "," + g + "," + b + ")";
+            }
+
+            function colorShowoff(color) {
+                return '<span style="background-color: ' + color + '">' + color + '</span>';
+            }
+
+            // Dimension must be at least 1
+            function generatePolytope(dimension, randomizer) {
+                if (dimension == 1) {
+                    return "line segment";
+                }
+                else if (dimension == 2) {
+                    return randomizer.integer(3,10) + "-gon";
+                }
+                else if (dimension == 3) {
+                    return randomizer.choice([
+                            ((randomizer) =>
+                                randomizer.choice(["", "dual of "]) +
+                                randomizer.choice(["", "truncated ", "rectified ", "cantellated ", "cantitruncated "]) + 
+                                randomizer.choice(["tetrahedron", "cube", "octahedron", "dodecahedron", "icosahedron"])),
+                            ((randomizer) =>
+                                randomizer.integer(3,10) + "-gon prism")
+                        ])(randomizer);
+                }
+                else if (dimension == 4) {
+                    return randomizer.choice([
+                            (randomizer) => "[" +
+                                randomizer.choice(["", "dual of "]) +
+                                randomizer.choice(["", "truncated ", "rectified ", "cantellated ", "cantitruncated "]) + 
+                                randomizer.choice(["tetrahedron", "cube", "octahedron", "dodecahedron", "icosahedron"]) + "]-prism",
+                            (randomizer) =>
+                                randomizer.integer(3,10) + "-" + randomizer.integer(3,10) + "-duoprism",
+                            (randomizer) =>
+                                randomizer.choice(["", "dual of "]) +
+                                randomizer.choice(["", "truncated ", "rectified ", "cantellated ", "cantitruncated ", "runcinated ", "runcitruncated ", "bitruncated ", "runcicantitruncated "]) + 
+                                randomizer.choice(["5-cell", "8-cell", "16-cell", "24-cell", "120-cell", "600-cell"])
+                        ])(randomizer);
+                }
+                else {
+                    return randomizer.choice([
+                            (randomizer) => {
+                                totalStr = "t(";
+                                for (let i = 0; i < dimension; i++)
+                                    if (randomizer.integer(0,2) == 0) totalStr += i + " ";
+                                totalStr += ")-" + dimension + "-" + randomizer.choice(["cube", "orthoplex", "simplex"]);
+                                return totalStr;
+                            },
+                            (randomizer) => {
+                                const firstPartDim = randomizer.integer(2, dimension - 1);
+                                const firstPart = generatePolytope(firstPartDim, randomizer);
+                                const secondPart = generatePolytope(dimension - firstPartDim, randomizer);
+                                return "[" + firstPart + "," + secondPart + "]-duoprism";
+                            }
+                        ])(randomizer);
+                }
+            }
+
+            function generateStarPolytope(dimension, randomizer) {
+                if (dimension == 1) {
+                    return "line segment";
+                }
+                else if (dimension == 2) {
+                    let starTop = randomizer.integer(5,15);
+                    return starTop + "/" + randomizer.integer(2, Math.floor(starTop / 2 - 1)) + "-gon";
+                }
+                else if (dimension == 3) {
+                    return randomizer.choice([
+                        (randomizer) =>
+                            randomizer.choice([
+                                "gocco", "querco", "groh", "oho", "cho",
+                                "thah", "quith", "socco", "sroh", "cotco",
+                                "quitco", "gissid", "sidtid", "ditdid",
+                                "gidtid", "gidditdid", "giid", "giddy",
+                                "sirsid", "sidhid", "seihid", "did",
+                                "gidhei", "sidhei", "gid", "geihid",
+                                "gidhid", "tigid", "gaddid", "qrid",
+                                "gird", "raded", "ided", "ri", "seside",
+                                "gad", "sissid", "gike", "quit sissid",
+                                "saddid", "sird", "tiggy", "siid",
+                                "sidditdid", "siddy", "quit gissid",
+                                "gidrid", "gisdid", "idtid", "quitdid",
+                                "gaquatid", "siddid", "isdid", "gosid",
+                                "gisid", "sided", "girsid"
+                            ]) + " (OBSA)",
+                        (randomizer) => {
+                            let starTop = randomizer.integer(5,15);
+                            return starTop + "/" + randomizer.integer(2, starTop / 2 - 1) + randomizer.choice(["-prism, -antiprism"])
+                        }
+                    ])(randomizer);
+                }
+                else if (dimension == 4) {
+                    randomizer.choice([
+                        (randomizer) => 
+                            randomizer.integer(1, 2188) + " in <a href='https://polytope.miraheze.org/wiki/List_of_uniform_polychora'>this list</a> (if convex then raise pyramid on each cell)",
+                        (randomizer) => {
+                            let starTop1 = randomizer.integer(5,15);
+                            let starTop2 = randomizer.integer(5,15);
+                            return starTop1 + "/" + randomizer.integer(2, starTop1 / 2 - 1) +
+                            "-"  + starTop2 + "/" + randomizer.integer(2, starTop2 / 2 - 1) + randomizer.choice(["-duoprism"])
+                        },
+                        (randomizer) =>
+                            generateStarPolytope(3, randomizer) + " prism"
+                    ])(randomizer);
+                }
+                else {
+                    const firstPartDim = randomizer.integer(2, dimension - 1);
+                    const firstPart = generateStarPolytope(firstPartDim, randomizer);
+                    const secondPart = generateStarPolytope(dimension - firstPartDim, randomizer);
+                    return "[" + firstPart + "," + secondPart + "]-duoprism";
+                }
+            }
+
+            // Dimension must be at least 3
+            function generateTorus(pathDim, dimension, randomizer) {
+                const crossDim = dimension - pathDim + 1;
+
+                const path = generatePolytope(pathDim, randomizer);
+                const crossSections = generatePolytope(crossDim, randomizer);
+
+                return "[" + path + "] path inflated by [" + crossSections + "] cross-sections";
+            }
+
+            // Dimension must be at least 3
+            function generateMail(dimension, randomizer) {
+                const firstPathDim = randomizer.integer(2, dimension - 1);
+                const secondPathDim = dimension - firstPathDim + 1;
+
+                const firstTorus = generateTorus(firstPathDim, dimension, randomizer);
+                const secondTorus = generateTorus(secondPathDim, dimension, randomizer);
+
+                return "[" + firstTorus + "] chainmailed with [" + secondTorus + "]";
+            }
+
+            // Personality should be an array of pairs (as two-element arrays) of personality attribute names and their scores out of 10.
+            // For example: [["Funny", 7], ["Dark", 8], ["Outgoing", 2]]
+            function generatePersonalityScoresHtml(personality) {
+                let totalHtml = '';
+                
+                totalHtml += '<ul class="mono">';
+                for (let i = 0; i < personality.length; i++)
+                    totalHtml += '<li>' + (personality[i][1] == 10 ? '' : '_') + personality[i][1] + '/10 ' + personality[i][0] + '</li>';
+                totalHtml += '</ul>'
+
+                return totalHtml;
+            }
+
+            function generatePersonalityScores(randomizer) {
+                return [
+                    ["Outgoing", randomizer.integer(0,5) == 0 ? randomizer.integer(0,10) : randomizer.integer(5,10)],
+                    ["Funny", randomizer.integer(0,10)],
+                    ["Dark", randomizer.integer(0,10)],
+                    ["Mean", randomizer.integer(0,5) == 0 ? randomizer.integer(0,10) : randomizer.integer(0,2)],
+                    ["Secretive", randomizer.integer(0,10)],
+                    ["Fancy", randomizer.integer(0,10)],
+                    // Most Endbeings are not dimensionist
+                    ["Qeveqotwvoet (Dimensionism)", randomizer.integer(0,5) == 0 ? randomizer.integer(0,10) : randomizer.integer(0,2)],
+                    ["Degree of High-Functioning Autism (by human standards)", randomizer.integer(0, 10)],
+                    ["Degree of ADHD (by human standards)", randomizer.integer(0,10)]
+                ];
+            }
+
+            function generateClothingPrefsHtml(clothingPrefs) {
+                return '<ul><li>Top: ' + clothingPrefs.topType + '</li>' +
+                    '<li>Top Fabric: ' + clothingPrefs.topFabric + '</li>' +
+                    '<li>Top Color: ' + colorShowoff(clothingPrefs.topColor) + '</li>' +
+                    '<li>Bottom: ' + clothingPrefs.bottomType + '</li>' +
+                    '<li>Bottom Fabric: ' + clothingPrefs.bottomFabric + '</li>' +
+                    '<li>Bottom Color: ' + colorShowoff(clothingPrefs.bottomColor) + '</li>' +
+                    '<li>Weave: ' + clothingPrefs.weave + '</li>' +
+                    '<li>Preferred mail fabric: ' + clothingPrefs.mail + '</li></ul>';
+            }
+
+            function generateClothingPrefs(dimension, randomizer) {
+                const total = {};
+
+                total.topType = randomizer.choice(["t-shirt", "dress", "jacket", "lab coat", "coat", "button-down", "cardigan", "hoodie"]);
+                total.topFabric = randomizer.choice(["gem", "metal", "leather", "wood", "leaves"]);
+                total.topColor = randomColor(randomizer);
+
+                total.bottomType = randomizer.choice(["pants", "shorts", "skirt", "loincloth"]);
+                total.bottomFabric = randomizer.choice(["gem", "metal", "leather", "wood", "leaves"]);
+                total.bottomColor = randomColor(randomizer);
+
+                total.weave = randomizer.choice(["plate", "mail fabric"]);
+                total.mail = generateMail(dimension, randomizer);
+
+                return total;
+            }
+
+            
+            function generateVoice(randomizer) {
+                const pitch = randomizer.integer(0, 10);
+                const gravel = randomizer.integer(0, 10);
+                const warble = randomizer.integer(0, 10);
+                const warmth = randomizer.integer(0, 10);
+                const depth = randomizer.integer(0, 10);
+                const breathiness =  randomizer.integer(0, 10);
+                const femininity = randomizer.integer(0, 10);
+                
+                return '<ul class="mono">' +
+                    '<li>' + (pitch == 10 ? "" : "_") + pitch + '/10 High Pitch</li>' +
+                    '<li>' + (gravel == 10 ? "" : "_") + gravel + '/10 Gravel</li>' +
+                    '<li>' + (warble == 10 ? "" : "_") + warble + '/10 Warble</li>' +
+                    '<li>' + (warmth == 10 ? "" : "_") + warmth + '/10 Warmth</li>' +
+                    '<li>' + (depth == 10 ? "" : "_") + depth + '/10 Depth</li>' +
+                    '<li>' + (breathiness == 10 ? "" : "_") + breathiness + '/10 Breathiness</li>' +
+                    '<li>' + (femininity == 10 ? "" : "_") + femininity + '/10 Femininity</li>' +
+                    '<li>' + randomizer.choice([
+                        "General American", "Southern", "New Yorker", "Spanish", "Indian", "Australian",
+                        "Scottish", "Cockney", "Wales", "Received Pronunciation", "Transatlantic", "Unidentifiable"]) + ' accent when imitating/speaking English</li>' +
+                    '<li>' + randomizer.choice(["small", "large", "cracked", "jagged", "smooth", "rough", "oblong", "oblate"]) + ' orthoplices</li>' +
+                    '<li>' + randomizer.choice(["average", "average", "very long", "forked"]) + ' tongue</li></ul>'
+            }
+
+            function generatePersonalityHtml(dimension, name, cycleCount, randomizer) {
+                const scores = generatePersonalityScores(randomizer);
+                compoundedPersonalityScores = scores;
+                const clothingPrefs = generateClothingPrefs(dimension, randomizer);
+                compoundedClothingPrefs = clothingPrefs;
+
+                let totalHtml = '';
+
+                if (cycleCount > 0)
+                    totalHtml += '<h3>New Life, New Me!</h3><p>After being a math agent for millions of years, ' + name + '\'s personality has drastically changed!</p>';
+
+                totalHtml += '<h3>Personality Scores</h3>';
+                totalHtml += generatePersonalityScoresHtml(scores);
+
+                totalHtml += '<h3>Clothing Preferences</h3>';
+                totalHtml += generateClothingPrefsHtml(clothingPrefs)
+
+                totalHtml += '<h3>Original Voice</h3>';
+                totalHtml += generateVoice(randomizer);
+
+
+                return totalHtml;
+            }
+
+            function generateToriphanToratope(dimension, randomizer) {
+                const options = [
+                    (randomizer) => {
+                        const inner = randomizer.integer(2, dimension - 1);
+                        return inner + "," + (dimension - inner) + "-torus";
+                    }];
+                if (dimension >= 4) {
+                    options.push((randomizer) => {
+                        const layer1 = randomizer.integer(2, dimension - 2);
+                        const layer2 = randomizer.integer(1, dimension - layer1 - 1);
+                        return layer1 + "," + layer2 + "," + (dimension - layer1 - layer2) + "-ditorus";
+                    });
+                    options.push((randomizer) => {
+                        const layer1 = randomizer.integer(2, dimension - 2);
+                        const layer2 = randomizer.integer(2, dimension - layer1);
+                        return layer1 + "," + layer2 + "," + (dimension - layer1 - layer2) + "-tiger";
+                    });
+                }
+                return randomizer.choice(options)(randomizer);
+            }
+
+            function generateCampeForm(dimension, name, cycleCount, randomizer) {
+                return '<ul><li>Type: Qamqpegac (Campe)</li>' +
+                    randomizer.choice([
+                        ((randomizer) =>
+                            '<li>Scales, dragonlike head shape</li>' +
+                            '<li>Scale color: ' + colorShowoff(randomColor(randomizer)) + ", "
+                                + randomizer.choice(["iridescent", "slippery", "glossy", "matte", "mottled"]) + ", "
+                                + colorShowoff(randomColor(randomizer)) + " "
+                                + randomizer.choice(["curvy", "broken", "wavy", "jagged", "ornate", "dotted"]) + " "
+                                + randomizer.choice(["cyclic", "stripey", "branching", "muscle-highlighting"]) + " markings "
+                                + randomizer.choice(["", " (face included)", " (brows included)", " (face and brows included)"]) + '</li>'),
+                        ((randomizer) =>
+                            '<li>Humanlike skin</li>' +
+                            '<li>Skin color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Nose: ' + randomizer.choice(["human", "slits"]) + '</li>'
+                        )
+                    ])(randomizer) +
+                    '<li>Snake Hair Length: ' + randomizer.choice(["short", "medium", "long"]) + '</li>' +
+                    '<li>Snake Hair Scale Color: ' + (randomizer.integer(0, 1) == 0 ? "Uses the same scales/skin as the rest of the body" : colorShowoff(randomColor(randomizer))) + '</li>' +
+                    '<li>Snake Hair Stripe Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Snake Hair Attitude: ' + randomizer.choice(["aggressive", "writhing", "calm", "helpful", "points in directions", "twisty", "wavy"]) + '</li>' +
+                    '<li>Eye Shape: ' + randomizer.choice(["almond", "lidded", "round", "monolid"]) + '</li>' +
+                    '<li>Eye Sclera Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Eye Iris Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Eye Pupil Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Eye Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>' +
+                    '<li>Ear Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>' +
+                    '<li>Arm Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>' +
+                    '<li>Wing Size: ' + randomizer.choice(["tiny", "small", "average-sized", "large", "massive", "cumbersomely large"]) + '</li>' +
+                    '<li>Wing Shape: ' + randomizer.choice(["angelic/bird", "demonic/dragon/bat", "insectoid", "fractal", "butterfly", "moth"]) + '</li>' +
+                    '<li>Wing Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Wing Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + "</li>" +
+                    randomizer.choice([
+                        ((randomizer) =>
+                            '<li>Centaur Leg Arrangement: ' + generatePolytope(dimension - 1, randomizer) + '</li>'
+                        ),
+                        ((randomizer) => 
+                            '<li>Serpent Tail Length: ' + (randomizer.integer(0, 3) == 0 ?
+                                randomizer.choice(["must switchback to fit in 3D rooms", "must switchback in multiple directions to fit in 3D rooms", "struggles to fit in 3D rooms even with switchbacks"])
+                                : randomizer.choice(["short", "medium", "long"])) + '</li>' +
+                            '<li>Serpent Tail Scutes: ' + randomizer.choice(["single", "double"]) + '</li>' +
+                            '<li>Serpent Tail Back Scale Color: ' + (randomizer.integer(0, 2) == 0 ? "Uses the same scales/skin as the rest of the body" : colorShowoff(randomColor(randomizer))) + '</li>' +
+                            '<li>Serpent Tail Belly Scale Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Serpent Tail Arrangement: ' + generatePolytope(randomizer.integer(1, dimension - 1), randomizer) + '</li>'
+                        )
+                    ])(randomizer) +
+                    '<li>Waist Head Arrangement: ' + generatePolytope(randomizer.integer(2, dimension - 1), randomizer) + "</li>" +
+                    randomizer.choice([
+                        (randomizer) =>
+                            "<li>Waist Head Type: " + randomizer.choice(["canine", "feline", "bear-like"]) + "</li>" +
+                            '<li>Waist Head Fur color: ' + colorShowoff(randomColor(randomizer)) + ", "
+                                + randomizer.choice(["iridescent", "slippery", "glossy", "matte", "mottled"]) + ", "
+                                + colorShowoff(randomColor(randomizer)) + " "
+                                + randomizer.choice(["curvy", "broken", "wavy", "jagged", "ornate", "dotted"]) + " "
+                                + randomizer.choice(["cyclic", "stripey", "branching", "muscle-highlighting"]) + " markings "
+                                + randomizer.choice(["", " (face included)", " (brows included)", " (face and brows included)"]) + '</li>',
+                        (randomizer) =>
+                            randomizer.choice([
+                                ((randomizer) =>
+                                    '<li>Waist Head Type: Draconic</li>' +
+                                    '<li>Waist Head Scale color: ' + colorShowoff(randomColor(randomizer)) + ", "
+                                        + randomizer.choice(["iridescent", "slippery", "glossy", "matte", "mottled"]) + ", "
+                                        + colorShowoff(randomColor(randomizer)) + " "
+                                        + randomizer.choice(["curvy", "broken", "wavy", "jagged", "ornate", "dotted"]) + " "
+                                        + randomizer.choice(["cyclic", "stripey", "branching", "muscle-highlighting"]) + " markings "
+                                        + randomizer.choice(["", " (face included)", " (brows included)", " (face and brows included)"]) + '</li>'),
+                                ((randomizer) =>
+                                    '<li>Waist Head Type: Humanoid</li>' +
+                                    '<li>Waist Head Skin color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                                    '<li>Waist Head Nose: ' + randomizer.choice(["human", "slits"]) + '</li>' +
+                                    (randomizer.integer(0,11) == 0 ? 
+                                    (
+                                        '<li>Waist Head Snake Hair Length: ' + randomizer.choice(["short", "medium", "long"]) + '</li>' +
+                                        '<li>Waist Head Snake Hair Scale Color: ' + (randomizer.integer(0, 1) == 0 ? "Uses the same scales/skin as the rest of the body" : colorShowoff(randomColor(randomizer))) + '</li>' +
+                                        '<li>Waist Head Snake Hair Stripe Color: ' + colorShowoff(randomColor(randomizer)) + '</li>'
+                                    )
+                                    : (
+                                        '<li>Waist Head Hair color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                                        '<li>Waist Head Hair Length: ' + randomizer.choice(["short", "medium", "long"]) + '</li>'
+                                    )))
+                            ])(randomizer) +
+                            '<li>Waist Head Eye Shape: ' + randomizer.choice(["almond", "lidded", "round", "monolid"]) + '</li>' +
+                            '<li>Waist Head Eye Sclera Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Waist Head Eye Iris Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Waist Head Eye Pupil Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Waist Head Eye Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>' +
+                            '<li>Waist Head Ear Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>'
+                    ])(randomizer);
+            }
+
+            function generateHydraForm(dimension, name, cycleCount, randomizer) {
+                return '<ul><li>Type: Aeduraegac (Hydra)</li>' +
+                    '<li>Scale color: ' + colorShowoff(randomColor(randomizer)) + ", "
+                        + randomizer.choice(["iridescent", "slippery", "glossy", "matte", "mottled"]) + ", "
+                        + colorShowoff(randomColor(randomizer)) + " "
+                        + randomizer.choice(["curvy", "broken", "wavy", "jagged", "ornate", "dotted"]) + " "
+                        + randomizer.choice(["cyclic", "stripey", "branching", "muscle-highlighting"]) + " markings "
+                        + randomizer.choice(["", " (face included)", " (brows included)", " (face and brows included)"]) + '</li>' +
+                    '<li>For all heads:<ul>' +
+                        '<li>Eye Shape: ' + randomizer.choice(["almond", "lidded", "round", "monolid"]) + '</li>' +
+                        '<li>Eye Sclera Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                        '<li>Eye Iris Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                        '<li>Eye Pupil Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                        '<li>Eye Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>' +
+                        '<li>Ear Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>' +
+                    '</ul></li>' +
+                    '<li>Head Division Pattern: ' + randomizer.choice([
+                        (randomizer) =>
+                            "horizontal " + randomizer.choice(["X", "W", "Z"]),
+                        (randomizer) => 
+                            randomizer.choice([
+                                "subdividing edges of ",
+                                "subdividing faces of ",
+                                "subdividing " + ((dimension > 3) ? randomizer.integer(3, dimension - 1) + "-facets of " : "faces of ")
+                            ]) + (randomizer.integer(0,4) == 0 ? generateStarPolytope : generatePolytope)(randomizer.integer(2, dimension - 1), randomizer)
+                    ])(randomizer) +
+                    '<li>Initial Head Number: ' + randomizer.integer(3,16) + "</li></ul>";
+            }
+
+            function generateAlrauneForm(dimension, name, cycleCount, randomizer) {
+                return '<ul><li>Type: Nrenqqecegac (Alraune)</li>' +
+                    randomizer.choice([
+                        ((randomizer) =>
+                            '<li>Scales, dragonlike head shape</li>' +
+                            '<li>Scale color: ' + colorShowoff(randomColor(randomizer)) + ", "
+                                + randomizer.choice(["iridescent", "slippery", "glossy", "matte", "mottled"]) + ", "
+                                + colorShowoff(randomColor(randomizer)) + " "
+                                + randomizer.choice(["curvy", "broken", "wavy", "jagged", "ornate", "dotted"]) + " "
+                                + randomizer.choice(["cyclic", "stripey", "branching", "muscle-highlighting"]) + " markings "
+                                + randomizer.choice(["", " (face included)", " (brows included)", " (face and brows included)"]) + '</li>'),
+                        ((randomizer) =>
+                            '<li>Humanlike skin</li>' +
+                            '<li>Skin color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Nose: ' + randomizer.choice(["human", "slits"]) + '</li>' +
+                            (randomizer.integer(0,11) == 0 ? 
+                            (
+                                '<li>Snake Hair Length: ' + randomizer.choice(["short", "medium", "long"]) + '</li>' +
+                                '<li>Snake Hair Scale Color: ' + (randomizer.integer(0, 1) == 0 ? "Uses the same scales/skin as the rest of the body" : colorShowoff(randomColor(randomizer))) + '</li>' +
+                                '<li>Snake Hair Stripe Color: ' + colorShowoff(randomColor(randomizer)) + '</li>'
+                            )
+                            : (
+                                '<li>Hair color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                                '<li>Hair Length: ' + randomizer.choice(["short", "medium", "long"]) + '</li>'
+                            )))
+                    ])(randomizer) +
+                    '<li>Eye Shape: ' + randomizer.choice(["almond", "lidded", "round", "monolid"]) + '</li>' +
+                    '<li>Eye Sclera Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Eye Iris Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Eye Pupil Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Eye Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>' +
+                    '<li>Ear Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>' +
+                    '<li>Arm Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>' +
+                    '<li>Root Length: ' + randomizer.choice(["short", "medium", "long"]) + '</li>' +
+                    '<li>Leaf Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Leaf Variegation Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Leaf Shape: ' + randomizer.choice([
+                        "perforated", "kidney-shaped", "oblique", "cordate", "elliptical",
+                        "lobtate", "bilobate", "palmatous", "lancelate", "oval",
+                        "serrated", "orbicular", "sagitate", "trifoliolate", "pinnate",
+                        "digitized", "rhomboid", "cuneiform", "acicular", "hastate"
+                    ]) + '(<a href="https://www.facebook.com/100082675628561/posts/types-of-leaf-shapes-a-visual-guide/688442990588216/">guide</a>)</li>' +
+                    '<li>Leaf Bunch Arrangement: ' + generatePolytope(randomizer.integer(1, dimension - 1), randomizer) + '</li>' +
+                    '<li>Flower Petal Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Flower Petal Blush Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Flower Petal Length: ' + randomizer.choice(["short", "medium", "long"]) + '</li>' +
+                    '<li>Flower Petal Width: ' + randomizer.choice(["narrow", "medium", "wide"]) + '</li>' +
+                    '<li>Flower Petal Arrangement: ' + generatePolytope(dimension - 1, randomizer) + '</li>' +
+                    '<li>Flower Sepal Arrangement: ' + generatePolytope(dimension - 1, randomizer) + '</li>' +
+                    '<li>Fruit: <ul>' +
+                    randomizer.choice([
+                        (randomizer) =>
+                            '<li>Type: Citrus</li>' +
+                            '<li>Peel Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Peel Blush Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Rind Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Vesicle Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Vesicle Size: ' + randomizer.choice(["small", "medium", "large"]) + '</li>' +
+                            '<li>Fruit Size: ' + randomizer.choice(["small", "medium", "large"]) + '</li>' +
+                            '<li>Fruit Shape: ' + randomizer.choice(["oblong", "spherical", "oblate"]) + '</li>' +
+                            '<li>Seediness: ' + randomizer.choice(["seedless", "a few", "seedy"]) + '</li>' +
+                            '<li>Peel Smoothness: ' + randomizer.choice(["smooth", "bumpy", "ridged"]) + '</li>' +
+                            '<li>Section Arrangement: ' + generatePolytope(dimension - 1, randomizer) + '</li>' +
+                            '<li>Flavor: ' + randomizer.choice(["sour", "sweet/sour", "sweet", "overly sweet"]) +
+                                "," + randomizer.choice(["bitter", "not bitter"]) + ", closest to flavor of " +
+                                randomizer.choice([
+                                    "grapefruit", "Persian lime", "lemon", "orange", "bitter orange", "kumquat", "Ichang papeda", "key lime",
+                                    "micrantha", "citron", "pomelo", "trifoliate orange"
+                                ]),
+                        (randomizer) => 
+                            '<li>Type: Pome</li>' +
+                            '<li>Peel Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Peel Blush Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Fruit Size: ' + randomizer.choice(["small", "medium", "large"]) + '</li>' +
+                            '<li>Fruit Shape: ' + randomizer.choice(["oblong", "spherical", "oblate"]) + '</li>' +
+                            '<li>Inside Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Crunchiness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Acidity: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Sweetness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Juiciness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Mealiness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Softness: ' + randomizer.integer(0,10) + "/10",
+                        (randomizer) =>
+                            '<li>Type: Stone fruit</li>' +
+                            '<li>Peel Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Peel Blush Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Fruit Size: ' + randomizer.choice(["small", "medium", "large"]) + '</li>' +
+                            '<li>Seed Size: ' + randomizer.choice(["25%", "50%", "75%"]) + " of fruit volume</li>" +
+                            '<li>Fruit Shape: ' + randomizer.choice(["oblong", "spherical", "oblate"]) + '</li>' +
+                            '<li>Inside Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Crunchiness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Acidity: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Sweetness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Juiciness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Mealiness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Softness: ' + randomizer.integer(0,10) + "/10",
+                        (randomizer) => 
+                            '<li>Type: Aggregate (raspberry/blackberry)</li>' +
+                            '<li>Skin Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Skin Blush Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Fruit Size: ' + randomizer.choice(["small", "medium", "large"]) + '</li>' +
+                            '<li>Fruit Shape: ' + randomizer.choice(["oblong", "spherical", "oblate"]) + '</li>' +
+                            '<li>Drupelet Size: ' + randomizer.choice(["small", "medium", "large"]) + '</li>' +
+                            '<li>Drupelet Shape: ' + randomizer.choice(["oblong", "spherical", "oblate"]) + '</li>' +
+                            '<li>Drupelet Seed Size: ' + randomizer.choice(["25%", "50%", "75%"]) + " of drupelet volume</li>" +
+                            (randomizer.integer(0,4) == 0 ?
+                                "<li>Drupelets twisted into toratopic shape: " + randomizer.integer(1,6) + " conjoined copies of " +
+                                    generateToriphanToratope(dimension, randomizer) + "</li>"   
+                            : "") +
+                            '<li>Crunchiness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Acidity: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Sweetness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Juiciness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Softness: ' + randomizer.integer(0,10) + "/10",
+                        (randomizer) =>
+                            '<li>Type: Pomegranate</li>' +
+                            '<li>Skin Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Skin Blush Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Fruit Size: ' + randomizer.choice(["small", "medium", "large"]) + '</li>' +
+                            '<li>Seed Size: ' + randomizer.choice(["25%", "50%", "75%"]) + " of fruit volume</li>" +
+                            '<li>Fruit Shape: ' + randomizer.choice(["oblong", "spherical", "oblate"]) + '</li>' +
+                            '<li>Seed Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            '<li>Crunchiness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Acidity: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Sweetness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Juiciness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Softness: ' + randomizer.integer(0,10) + "/10" +
+                            '<li>Seed edibility: ' + randomizer.choice(["spit out", "edible"]),
+                    ])(randomizer) +
+                    (randomizer.integer(0,4) == 0 ?
+                        "<li>Twisted into toratopic shape: " + randomizer.integer(1,6) + " conjoined copies of " +
+                            generateToriphanToratope(dimension, randomizer) + "</li>"   
+                    : "") +
+                    '</ul>' +
+                    '<li>Flower/Fruit Bunch Arrangement: ' + generatePolytope(randomizer.integer(1, dimension - 1), randomizer) + '</li></ul>';
+            }
+
+            function generateSynthForm(dimension, name, cycleCount, randomizer) {
+                return '<ul><li>Type: Qwthaphegac (Synth)</li>' +
+                    '<li>Metal scales, dragonlike head shape</li>' +
+                    '<li>Metal Scale color: ' + colorShowoff(randomColor(randomizer)) + ", "
+                        + randomizer.choice(["iridescent", "slippery", "glossy", "matte", "mottled"]) + ", "
+                        + colorShowoff(randomColor(randomizer)) + " "
+                        + randomizer.choice(["curvy", "broken", "wavy", "jagged", "ornate", "dotted"]) + " "
+                        + randomizer.choice(["cyclic", "stripey", "branching", "muscle-highlighting"]) + " markings "
+                        + randomizer.choice(["", " (face included)", " (brows included)", " (face and brows included)"]) + '</li>' +
+                    '<li>Eye Shape: ' + randomizer.choice(["almond", "lidded", "round", "monolid"]) + '</li>' +
+                    '<li>Eye Sclera Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Eye Iris Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Eye Pupil Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                    '<li>Eye Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>' +
+                    '<li>Ear Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>' +
+                    '<li>Arm Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>' +
+                    randomizer.choice([
+                        ((randomizer) =>
+                            '<li>Leg Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>'
+                        ),
+                        ((randomizer) =>
+                            '<li>Fish Tail Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>' +
+                            '<li>Fish Tail Scale Color: ' + (randomizer.integer(0, 2) == 0 ? "Uses the same scales/skin as the rest of the body" : colorShowoff(randomColor(randomizer))) + '</li>' +
+                            '<li>Fish Tail Length: ' + (randomizer.integer(0, 3) == 0 ?
+                                randomizer.choice(["must switchback to fit in 3D rooms", "must switchback in multiple directions to fit in 3D rooms", "struggles to fit in 3D rooms even with switchbacks"])
+                                : randomizer.choice(["short", "medium", "long"])) + '</li>'
+                        ),
+                        ((randomizer) => 
+                            '<li>Serpent Tail Length: ' + (randomizer.integer(0, 3) == 0 ?
+                                randomizer.choice(["must switchback to fit in 3D rooms", "must switchback in multiple directions to fit in 3D rooms", "struggles to fit in 3D rooms even with switchbacks"])
+                                : randomizer.choice(["short", "medium", "long"])) + '</li>' +
+                            '<li>Serpent Tail Scutes: ' + randomizer.choice(["single", "double"]) + '</li>' +
+                            '<li>Serpent Tail Back Scale Color: ' + (randomizer.integer(0, 2) == 0 ? "Uses the same scales/skin as the rest of the body" : colorShowoff(randomColor(randomizer))) + '</li>' +
+                            '<li>Serpent Tail Belly Scale Color: ' + colorShowoff(randomColor(randomizer)) + '</li>' +
+                            (randomizer.integer(0, 7) == 0 ?
+                                ('<li>Serpent Tail Arrangement: ' + generatePolytope(randomizer.integer(dimension - 2, dimension - 1), randomizer) + '</li>')
+                                : "")
+                        )
+                    ])(randomizer) + '</ul>';
+            }
+
+            function generateStartesianProductForm(dimension, name, cycleCount, randomizer) {
+                let pathDim = randomizer.integer(2,dimension-1);
+                return '<ul><li>Type: Chatqaibhegac (Startesian Product)</li>' +
+                    '<li>Path: ' + generateStarPolytope(pathDim, randomizer) + '</li>' +
+                    '<li>Cross-section: ' + generateStarPolytope(dimension - pathDim + 1, randomizer) + '</li>' +
+                    '<li>Color: ' + colorShowoff(randomColor(randomizer)) + '</li></ul>';
+            }
+
+            function generateFormAppearance(dimension, name, cycleCount, randomizer) {
+                return (randomizer.choice([
+                    generateCampeForm,
+                    generateHydraForm,
+                    generateAlrauneForm,
+                    generateSynthForm,
+                    generateStartesianProductForm]))(dimension, name, cycleCount, randomizer);
+            }
+
+            function applyRandomPersonalityShifts(randomizer) {
+                let totalHtml = '<ul>';
+                for (let i = 0; i < compoundedPersonalityScores.length; i++) {
+                    randomizer.choice([
+                        () => {
+                            totalHtml += '<li>No change in ' + compoundedPersonalityScores[i][0] + '</li>';
+                        },
+                        () => {
+                            const oneOrTwo = randomizer.integer(1,2);
+                            totalHtml += '<li>+' + oneOrTwo + " in " + compoundedPersonalityScores[i][0] + '</li>';
+                            compoundedPersonalityScores[i][1] += oneOrTwo;
+                            if (compoundedPersonalityScores[i][1] > 10) compoundedPersonalityScores[i][1] = 10;
+                        },
+                        () => {
+                            const oneOrTwo = randomizer.integer(1,2);
+                            totalHtml += '<li>-' + oneOrTwo + " in " + compoundedPersonalityScores[i][0] + '</li>';
+                            compoundedPersonalityScores[i][1] -= oneOrTwo;
+                            if (compoundedPersonalityScores[i][1] < 0) compoundedPersonalityScores[i][1] = 0;
+                        },
+                    ])();
+                }
+                totalHtml += '</ul><details><summary>New Personality</summary>' + generatePersonalityScoresHtml(compoundedPersonalityScores) + "</details>";
+                return totalHtml;
+            }
+
+            function generateForm(dimension, name, cycleCount, formIndex, randomizer) {
+                let totalHtml = '<h3>Appearance</h3>';
+                totalHtml += generateFormAppearance(dimension, name, cycleCount, new StringRandom(name + "/" + cycleCount + "/" + dimension + "/Form" + formIndex + "/Appearance"));
+                
+                totalHtml += '<h3>Personality Resolution</h3>';
+                totalHtml += applyRandomPersonalityShifts(new StringRandom(name + "/" + cycleCount + "/" + dimension + "/Form" + formIndex + "/PersonalityShifts"));
+
+                totalHtml += '<h3>Musical Theme</h3><button onclick="insertMusicTheme(this,' +
+                    dimension + ",'" + name + "/" + cycleCount + "/" + dimension + "/Form" + formIndex + "/MusicTheme" + '\')">Generate Musical Theme!</button>'
+
+                return totalHtml;
+            }
+
+            function generateCharacterHtml(dimension, name, cycleCount, randomizer) {
+                let numForms = document.getElementById("form-count").value;
+
+                let totalHtml = '';
+                totalHtml += '<h2>Base Personality</h2><br/><div>';
+                totalHtml += generatePersonalityHtml(dimension, name, cycleCount, randomizer);
+                totalHtml += '</div>';
+
+                totalHtml += '<h2>Forms</h2><div>'
+                for (let formIndex = 1; formIndex <= numForms; formIndex++) {
+                    totalHtml += "<h3>Form " + formIndex + "</h3><div>"
+                    totalHtml += generateForm(dimension, name, cycleCount, formIndex, randomizer);
+                    totalHtml += "</div>";
+                }
+                totalHtml += "</div>"
+
+                return totalHtml;
+            }
+        
+            function generateCharacter() {
+                // Clear the personality just in case
+                compoundedPersonality = null;
+
+                const dimension = document.getElementById("dimension").value;
+                const name = document.getElementById("endbeing-name").value;
+                const cycleCount = document.getElementById("cycle-count").value;
+
+                // This will determine all choices made by the randomizer
+                const randomizer = new StringRandom(name + "/" + cycleCount + "/" + dimension);
+
+                document.getElementById("oc-content").innerHTML = generateCharacterHtml(dimension, name, cycleCount, randomizer);
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Phykommaton OC Generator</h1>
+        <p>This generator will randomly generate the full life cycle of an original Phykommaton based on their name, dimension, and cycle count.</p>
+        <p style="font-size: 8pt">Previous versions available as revisions <a href="https://gitlab.com/kronosta/endbeing-oc-generator">here</a></p>
+        <h3>Options</h3>
+        <div>
+            <form id="gen-params">
+                <label for="dimension">Dimension (at least 3):</label><br/>
+                <input type="number" id="dimension" name="dimension" min="3" value="4"/><br/>
+                <label for="endbeing-name">Name:</label><br/>
+                <input type="text" id="endbeing-name" name="endbeing-name"/><br/>
+                <label for="cycle-count">How many Layer 1 cycles have they gone through already?</label><br/>
+                <input type="number" id="cycle-count" name="cycle-count" min="0" value="0"/><br/>
+                <label for="form-count">Form Count</label><br/>
+                <input type="number" id="form-count" name="form-count" value="500"/><br/>
+            </form>
+            <button onclick="generateCharacter()">Generate Character!</button>
+        </div>
+        <h3>Terminology</h3>
+        <div><ul>
+            <li>
+                "t( number number number... )" applied to a polytope refers to Wythoffian operations,
+                <a href="https://polytope.miraheze.org/wiki/Wythoffian_operation">explained here</a>
+                (but be warned it's a bit difficult to parse and also requires you read the Coxeter diagram article).
+                All in all these kind of correspond to cutting pieces off the polytope, but it's a bit more complicated than that.
+                Assume t() means the original polytope (though it's technically incorrect and should be t(0)).
+            </li>
+            <li>
+                n,m-torus, n,m,l-ditorus, and n,m,l-tiger use Marek14's system of naming toratopes at the bottom of
+                <a href="https://hi.gher.space/forum/viewtopic.php?p=19603#p19603">this hi.gher.space message</a> and the message below.
+            </li>
+            <li>
+                Colors are given in RGB format.
+            </li>
+            <li>
+                Mail fabric is a fictional fabric made of really tiny chainmail, but the individual links are still visible to the naked eye.
+                I use this because it still isn't really known if weaving planes or other surfaces together is possible in 4D.
+            </li>
+        </ul></div>
+        <h3>Details</h3>
+        <div id="oc-content">
+        </div>
+    </body>
+</html>
